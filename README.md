@@ -5,7 +5,7 @@ git remote update
 git pull
 pip install -e .
 ```
-And copy `2d_knee.mat` and `2dt_heart.mat` into `data/`
+And copy `2d_knee.mat` and `2dt_heart.mat` into `data/`.
 I have used virtualenv for IML projects because I think we use similar packages thereof:
 ```bash
 pip install -r requirements.txt
