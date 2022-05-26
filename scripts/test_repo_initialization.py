@@ -23,7 +23,7 @@ if __name__ == '__main__':
     print(f"{X_test}\n{X_test_np}")
 
     url = "https://polybox.ethz.ch/index.php/s/SgPWhQEmKr0MtpO/download"
-    save_dir = "../"
+    save_dir = "./"
     filename = "data.zip"
     download_file(url, save_dir, filename)
     unzip_file(os.path.join(save_dir, filename), save_dir, if_remove_zip_file=True)
