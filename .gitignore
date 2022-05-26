@@ -3,3 +3,4 @@ VNReconstruction.egg-info
 data/
 __pycache__/
 .ipynb_checkpoints
+*.zip
