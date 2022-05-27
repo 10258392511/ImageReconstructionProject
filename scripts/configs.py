@@ -8,9 +8,16 @@ dataset_args = {
     "eps_log": 1e-6
 }
 
-activation_params = {
-    "min_val": -1,
-    "max_val": 1
+# in consistency with hands-on 8
+vn_mri_params = {
+    "num_layers": 7,
+    "num_knots": 31,
+    "kernel_size": 5,
+    "activation_range": (-1, 1),
+    "num_filters": 15,
+    "in_channels": 1,
+    "init_kernel_std": 1e-3,
+    "init_knots_std": 1e-3,
+    "init_alpha_range": (0, 0.01),
+    "init_momentum_range": (0.05, 0.2),
 }
-
-num_knots = 31

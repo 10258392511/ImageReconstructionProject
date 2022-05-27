@@ -4,23 +4,41 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 
-def fixed_interp_linear(min_val, max_val, X, knots):
+def fixed_interp_linear(min_val, max_val, X, knots, mode="3d"):
     """
-    X: (B, C, D, H, W); knots: (N_knots, C), requires_grad = True
+    X: (B, C, D, H, W) or (B, C, H, W); knots: (N_knots, C), requires_grad = True
     """
-    B, C, D, H, W = X.shape
+    assert mode in ("3d", "2d")
+    if mode == "3d":
+        B, C, D, H, W = X.shape
+    else:
+        B, C, H, W = X.shape
     N_knots, _ = knots.shape
-    X = torch.clip(X, min_val, max_val)  # (B, C, D, H, W)
-    X = (X - min_val) / (max_val - min_val) * (N_knots - 1)  # scaling to be in [0, N_knots - 1]; (B, C, D, H, W)
-    X = X.permute(0, 2, 3, 4, 1)  # (B, D, H, W, C)
+    X = torch.clip(X, min_val, max_val)  # (B, C, D, H, W) or (B, C, H, W)
+    X = (X - min_val) / (max_val - min_val) * (N_knots - 1)  # scaling to be in [0, N_knots - 1]; (B, C, D, H, W) or (B, C, H, W)
+    if mode == "3d":
+        X = X.permute(0, 2, 3, 4, 1)  # (B, D, H, W, C)
+    else:
+        X = X.permute(0, 2, 3, 1)  # (B, H, W, C)
     X = X.reshape(-1, C)  # (N, C)
     X_floor = torch.floor(X).long().detach()
     X_ceil = torch.ceil(X).long().detach()
     vals_floor = torch.gather(knots, dim=0, index=X_floor)  # (N, C)
     vals_ceil = torch.gather(knots, dim=0, index=X_ceil)  # (N, C)
     vals_out = vals_floor * (X_ceil - X) + vals_ceil * (X - X_floor)  # (N, C)
-    vals_out = vals_out.reshape((B, D, H, W, C)).permute(0, 4, 1, 2, 3)  # (N, C) -> (B, D, H, W, C) -> (B, C, D, H, W)
+    if mode == "3d":
+        vals_out = vals_out.reshape((B, D, H, W, C)).permute(0, 4, 1, 2, 3)  # (N, C) -> (B, D, H, W, C) -> (B, C, D, H, W)
+    else:
+        vals_out = vals_out.reshape((B, H, W, C)).permute(0, 3, 1, 2)  # (N, C) -> (B, H, W, C) -> (B, C, H, W)
 
+    return vals_out
+
+
+def fixed_interp_linear_complex(min_val, max_val, X, knots, mode="3d"):
+    X = X.to(torch.complex64)
+    X_real, X_imag = torch.real(X), torch.imag(X)
+    vals_out =  fixed_interp_linear(min_val, max_val, X_real, knots, mode) + \
+                1j * fixed_interp_linear(min_val, max_val, X_imag, knots, mode)
     return vals_out
 
 
@@ -97,3 +115,11 @@ def k2i_complex(X):
     X_img = torch.fft.ifftn(X_i_shifted, dim=[-1, -2])
 
     return X_img
+
+
+def normalize_tensor(X, axes: tuple, eps=1e-6):
+    X_mean = torch.mean(X, dim=axes, keepdim=True)
+    X_std = torch.std(X, dim=axes, keepdim=True)
+    X_out = (X - X_mean) / (X_std + eps)
+
+    return X_out
