@@ -12,14 +12,25 @@ class VNMRI(nn.Module):
             mode: "vtv", "3d" or "2d"
         """
         super(VNMRI, self).__init__()
-        # TODO: initialize all parameters with appropriate distr.
-        self.params = self.params
-        self.kernels_real = None
-        self.kernels_imag = None
-        self.knots = None
-        self.alphas = None
-        self.momentums = None
-        self.k0 = None
+        self.params = params
+        assert self.params["mode"] in ("vtv", "3d", "2d")
+        if self.params["mode"] == "3d":
+            kernel_size = [self.params["kernel_size"] for _ in range(3)]
+        else:
+            kernel_size = [self.params["kernel_size"] for _ in range(2)]
+        self.kernels_real = nn.Parameter(torch.empty((self.params["num_layers"], self.params["num_filters"],
+                                                      self.params["in_channels"], *kernel_size)))
+        self.kernels_imag = nn.Parameter(torch.empty((self.params["num_layers"], self.params["num_filters"],
+                                                      self.params["in_channels"], *kernel_size)))
+        nn.init.trunc_normal_(self.kernels_real, std=self.params["init_kernel_std"])
+        nn.init.trunc_normal_(self.kernels_imag, std=self.params["init_kernel_std"])
+        self.knots = nn.Parameter(torch.empty(self.params["num_layers"], self.params["num_knots"], self.params["num_filters"]))
+        nn.init.trunc_normal_(self.knots, std=self.params["init_knots_std"])
+        self.alphas = nn.Parameter(torch.empty((self.params["num_layers"],)))
+        nn.init.uniform_(self.alphas, *self.params["init_alpha_range"])
+        self.momentums = nn.Parameter(torch.empty((self.params["num_layers"],)))
+        nn.init.uniform_(self.momentums, *self.params["init_momentum_range"])
+        self.k0 = nn.Parameter(torch.tensor(1.))
 
     def forward(self, X_ks, X_mask):
         pass
