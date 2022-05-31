@@ -1,3 +1,5 @@
+from torch.optim import AdamW
+
 dataset_args = {
     "path": "data/2dt_heart.mat",
     "split_ratio": 0.9,
@@ -20,4 +22,12 @@ vn_mri_params = {
     "init_knots_std": 1e-3,
     "init_alpha_range": (0, 0.01),
     "init_momentum_range": (0.05, 0.2),
+}
+
+
+vn_mri_opt_params = {
+    "class": AdamW,
+    "args": {
+        "lr": 3e-4  # in consistency with hands-on 8
+    }
 }
