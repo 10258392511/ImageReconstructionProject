@@ -24,6 +24,7 @@ class VNMRITrainer(object):
         self.train_loader = train_loader
         self.test_loader = test_loader
         self.opt = configs.vn_mri_opt_params["class"](self.model.parameters(), **configs.vn_mri_opt_params["args"])
+        self.scheduler = configs.vn_mri_opt_params["scheduler"](self.opt, **configs.vn_mri_opt_params["scheduler_args"])
         self.writer = SummaryWriter(self.params["log_dir"])
         self.global_steps = {"train": 0, "epoch": 0}
         self.loss = nn.L1Loss(reduction="sum")
@@ -97,6 +98,7 @@ class VNMRITrainer(object):
         for epoch in pbar:
             train_loss = self.train_()
             eval_loss = self.eval_()
+            self.scheduler.step()
 
             # save the best model
             if best_eval_loss > eval_loss:
@@ -108,7 +110,9 @@ class VNMRITrainer(object):
             self.writer.add_scalar("epoch_eval_loss", eval_loss, self.global_steps["epoch"])
             self.end_of_epoch_eval_()
             self.global_steps["epoch"] += 1
-            pbar.set_description(f"loss: train: {train_loss: .3f}, eval: {eval_loss: .3f}")
+            for param in self.opt.param_groups:
+                break
+            pbar.set_description(f"loss: train: {train_loss: .3f}, eval: {eval_loss: .3f}, lr: {param['lr']}")
 
     @torch.no_grad()
     def end_of_epoch_eval_(self):
