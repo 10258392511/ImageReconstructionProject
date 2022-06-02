@@ -28,6 +28,6 @@ vn_mri_params = {
 vn_mri_opt_params = {
     "class": AdamW,
     "args": {
-        "lr": 3e-4  # in consistency with hands-on 8
+        "lr": 1e-2  # in consistency with hands-on 8
     }
 }

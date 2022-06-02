@@ -45,7 +45,7 @@ class MRIDataset(Dataset):
         data_np = load_mat_data(self.params["path"])
         data_train, data_test = train_test_split(data_np, self.params["split_ratio"], self.params["seed"])
         if self.mode == "train":
-            self.data = data_train
+            self.data = data_train  # (H, W, T, B)
         else:
             self.data = data_test
         if self.dim == "2d":

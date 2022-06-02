@@ -41,3 +41,21 @@ def unzip_file(filename, save_dir, if_remove_zip_file=True):
     if if_remove_zip_file:
         os.remove(filename)
     print("Done!")
+
+
+def create_param_save_path(param_save_dir, filename):
+    if not os.path.isdir(param_save_dir):
+        os.makedirs(param_save_dir)
+
+    return os.path.join(param_save_dir, filename)
+
+
+def create_log_dir(time_stamp: str, arg_dict: dict):
+    dir_name = time_stamp
+    for key, val in arg_dict.items():
+        if not isinstance(val, str):
+            dir_name += f"_{key}_{val:.3f}"
+        else:
+            dir_name += f"_{key}_{val}"
+
+    return dir_name.replace(".", "_")
