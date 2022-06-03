@@ -1,3 +1,9 @@
+import sys
+
+path = "/home/zhexwu/GraduateCourses/"
+if path not in sys.path:
+    sys.path.append(path)
+
 import subprocess
 import argparse
 import ImageReconstructionProject.scripts.configs as configs
@@ -11,7 +17,7 @@ def make_bash_script(hyper_param_dict: dict):
     cd cmd: start from where the .sh file locates
     """
     bash_script = f"""#!/bin/bash
-#SBATCH --output=lesion_detection_log/%j.out
+#SBATCH --output=vnmri_log/%j.out
 #SBATCH --gres=gpu:1
 #SBATCH --mem=50G
 #SBATCH --cpus-per-task=5
@@ -19,7 +25,7 @@ eval "$(conda shell.bash hook)"
 conda activate deep_learning
 cd ../ImageReconstructionProject
 
-python ./scripts/run_vnmri.py --num_epochs 100 --num_workers 5 --batch_size 6 --mode {hyper_param_dict["mode"]} --noise_std {hyper_param_dict["noise_std"]}"""
+python ./scripts/run_vnmri.py --num_epochs 100 --num_workers 5 --batch_size 2 --mode {hyper_param_dict["mode"]} --sampling_ratio {hyper_param_dict["sampling_ratio"]} --noise_std {hyper_param_dict["noise_std"]}"""
 
     return bash_script
 

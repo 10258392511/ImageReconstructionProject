@@ -2,7 +2,8 @@ import sys
 
 # change this to parent directory of the project, e.g.,
 # mine is at "D:\testings\Python\TestingPython\ImageReconstructionProject"
-path = r"D:\testings\Python\TestingPython"
+# path = r"D:\testings\Python\TestingPython"
+path = "/home/zhexwu/GraduateCourses"
 if path not in sys.path:
     sys.path.append(path)
 

@@ -1,6 +1,8 @@
 exps/
 VNReconstruction.egg-info
 data/
+run/
+params/
 __pycache__/
 .ipynb_checkpoints
 *.zip
