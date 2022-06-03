@@ -1,7 +1,7 @@
 import sys
 
-# path = r"D:\testings\Python\TestingPython"
-path = "/home/zhexwu/GraduateCourses"
+path = r"D:\testings\Python\TestingPython"
+# path = "/home/zhexwu/GraduateCourses"
 if path not in sys.path:
     sys.path.append(path)
 
@@ -73,12 +73,12 @@ if __name__ == '__main__':
     })
     trainer = VNMRITrainer(model, train_loader, test_loader, params)
 
-    ### VM only ###
-    orig_stdout = sys.stdout
-    orig_stderr = sys.stderr
-    log_file = open(f"/home/zhexwu/GraduateCourses/submission/vnmri_log/{log_dir_name}.txt",
-                    "w")
-    sys.stdout = log_file
-    sys.stderr = log_file
-    ### end of VM only block ###
+    # ### VM only ###
+    # orig_stdout = sys.stdout
+    # orig_stderr = sys.stderr
+    # log_file = open(f"/home/zhexwu/GraduateCourses/submission/vnmri_log/{log_dir_name}.txt",
+    #                 "w")
+    # sys.stdout = log_file
+    # sys.stderr = log_file
+    # ### end of VM only block ###
     trainer.train()

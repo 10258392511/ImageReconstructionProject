@@ -29,7 +29,7 @@ vn_mri_params = {
 vn_mri_opt_params = {
     "class": AdamW,
     "args": {
-        "lr": 1e-2
+        "lr": 1e-3
     },
     "scheduler": LambdaLR,
     "scheduler_args": {
