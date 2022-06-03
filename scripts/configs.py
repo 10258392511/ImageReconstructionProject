@@ -1,5 +1,5 @@
 from torch.optim import AdamW
-from torch.optim.lr_scheduler import StepLR
+from torch.optim.lr_scheduler import LambdaLR
 
 dataset_args = {
     "path": "data/2dt_heart.mat",
@@ -29,11 +29,10 @@ vn_mri_params = {
 vn_mri_opt_params = {
     "class": AdamW,
     "args": {
-        "lr": 1e-2
+        "lr": 1e-3
     },
-    "scheduler": StepLR,
+    "scheduler": LambdaLR,
     "scheduler_args": {
-        "step_size": 3,
-        "gamma": 0.5
+        "lr_lambda": lambda epoch: max(0.95 ** epoch, 1e-4 / vn_mri_opt_params["args"]["lr"])
     }
 }
