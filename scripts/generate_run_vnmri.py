@@ -25,7 +25,7 @@ eval "$(conda shell.bash hook)"
 conda activate deep_learning
 cd ../ImageReconstructionProject
 
-python ./scripts/run_vnmri.py --num_epochs 100 --num_workers 5 --batch_size 2 --mode {hyper_param_dict["mode"]} --sampling_ratio {hyper_param_dict["sampling_ratio"]} --noise_std {hyper_param_dict["noise_std"]}"""
+python ./scripts/run_vnmri.py --num_epochs 100 --num_workers 5 --batch_size 2 --mode {hyper_param_dict["mode"]} --sampling_ratio {hyper_param_dict["sampling_ratio"]} --noise_std {hyper_param_dict["noise_std"]} --lr {hyper_param_dict["lr"]}"""
 
     return bash_script
 
@@ -48,12 +48,54 @@ if __name__ == '__main__':
     # set 1
     hyper_params[1] = [
         {"mode": "vtv", "sampling_ratio": configs.dataset_args["sampling_ratio"],
-         "noise_std": configs.dataset_args["noise_std"]},
+         "noise_std": configs.dataset_args["noise_std"], "lr": 5e-3},
         {"mode": "3d", "sampling_ratio": configs.dataset_args["sampling_ratio"],
-         "noise_std": configs.dataset_args["noise_std"]},
+         "noise_std": configs.dataset_args["noise_std"], "lr": 1e-3},
         {"mode": "2d", "sampling_ratio": configs.dataset_args["sampling_ratio"],
-         "noise_std": configs.dataset_args["noise_std"]}
+         "noise_std": configs.dataset_args["noise_std"], "lr": 1e-3}
     ]
+
+    # set 2
+    hyper_params[2] = {
+        {"mode": "3d", "sampling_ratio": configs.dataset_args["sampling_ratio"],
+         "noise_std": configs.dataset_args["noise_std"], "lr": 5e-3},
+        {"mode": "3d", "sampling_ratio": configs.dataset_args["sampling_ratio"],
+         "noise_std": configs.dataset_args["noise_std"], "lr": 3e-3},
+        {"mode": "3d", "sampling_ratio": configs.dataset_args["sampling_ratio"],
+         "noise_std": configs.dataset_args["noise_std"], "lr": 1e-3},
+        {"mode": "3d", "sampling_ratio": configs.dataset_args["sampling_ratio"],
+         "noise_std": configs.dataset_args["noise_std"], "lr": 8e-4},
+        {"mode": "3d", "sampling_ratio": configs.dataset_args["sampling_ratio"],
+         "noise_std": configs.dataset_args["noise_std"], "lr": 5e-4}
+    }
+
+    # set 3
+    hyper_params[3] = {
+        {"mode": "vtv", "sampling_ratio": 1 / 5,
+         "noise_std": 0.01, "lr": 5e-3},
+        {"mode": "vtv", "sampling_ratio": 1 / 10,
+         "noise_std": 0.01, "lr": 5e-3},
+        {"mode": "vtv", "sampling_ratio": 1 / 15,
+         "noise_std": 0.01, "lr": 5e-3},
+        {"mode": "vtv", "sampling_ratio": 1 / 20,
+         "noise_std": 0.01, "lr": 5e-3},
+        {"mode": "vtv", "sampling_ratio": 1 / 25,
+         "noise_std": 0.01, "lr": 5e-3}
+    }
+
+    # set 4
+    hyper_params[4] = {
+        {"mode": "vtv", "sampling_ratio": 1 / 5,
+         "noise_std": 0.01, "lr": 5e-3},
+        {"mode": "vtv", "sampling_ratio": 1 / 5,
+         "noise_std": 0.02, "lr": 5e-3},
+        {"mode": "vtv", "sampling_ratio": 1 / 5,
+         "noise_std": 0.03, "lr": 5e-3},
+        {"mode": "vtv", "sampling_ratio": 1 / 5,
+         "noise_std": 0.04, "lr": 5e-3},
+        {"mode": "vtv", "sampling_ratio": 1 / 5,
+         "noise_std": 0.05, "lr": 5e-3}
+    }
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--set_num", type=int, choices=hyper_params.keys(), required=True)

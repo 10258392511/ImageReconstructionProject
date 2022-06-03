@@ -1,7 +1,7 @@
 import sys
 
-path = r"D:\testings\Python\TestingPython"
-# path = "/home/zhexwu/GraduateCourses"
+# path = r"D:\testings\Python\TestingPython"
+path = "/home/zhexwu/GraduateCourses"
 if path not in sys.path:
     sys.path.append(path)
 
@@ -29,6 +29,7 @@ if __name__ == '__main__':
     parser.add_argument("--num_workers", type=int, default=0)
     parser.add_argument("--num_epochs", type=int, default=10)
     parser.add_argument("--grad_clip_val", default=None)
+    parser.add_argument("--lr", type=float, default=1e-3)
 
     args = parser.parse_args()
     params = vars(args)
@@ -44,6 +45,10 @@ if __name__ == '__main__':
     model_args.update({
         "mode": params["mode"]
     })
+    params.update({
+        "opt_params": configs.vn_mri_opt_params.copy()
+    })
+    params["opt_params"]["args"]["lr"] = params["lr"]
     time_stamp = datetime.now().strftime("%Y_%m_%d_%H_%M_%S_%f")
 
     # dataset
@@ -64,7 +69,8 @@ if __name__ == '__main__':
     log_params = {
         "sampling_ratio": dataset_args["sampling_ratio"],
         "noise_std": dataset_args["noise_std"],
-        "mode": model_args["mode"]
+        "mode": model_args["mode"],
+        "lr": params["lr"]
     }
     log_dir_name = create_log_dir(time_stamp, log_params)
     params.update({
@@ -73,12 +79,12 @@ if __name__ == '__main__':
     })
     trainer = VNMRITrainer(model, train_loader, test_loader, params)
 
-    # ### VM only ###
-    # orig_stdout = sys.stdout
-    # orig_stderr = sys.stderr
-    # log_file = open(f"/home/zhexwu/GraduateCourses/submission/vnmri_log/{log_dir_name}.txt",
-    #                 "w")
-    # sys.stdout = log_file
-    # sys.stderr = log_file
-    # ### end of VM only block ###
+    ### VM only ###
+    orig_stdout = sys.stdout
+    orig_stderr = sys.stderr
+    log_file = open(f"/home/zhexwu/GraduateCourses/submission/vnmri_log/{log_dir_name}.txt",
+                    "w")
+    sys.stdout = log_file
+    sys.stderr = log_file
+    ### end of VM only block ###
     trainer.train()

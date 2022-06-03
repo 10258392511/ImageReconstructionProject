@@ -15,7 +15,7 @@ from ImageReconstructionProject.helpers.recon_utils import *
 class VNMRITrainer(object):
     def __init__(self, model: VNMRI, train_loader, test_loader, params):
         """
-        params:
+        params: "opt_params"
         bash:
             batch_size, num_epochs, log_dir, param_save_dir, notebook, grad_clip_val
         """
@@ -23,8 +23,11 @@ class VNMRITrainer(object):
         self.model = model
         self.train_loader = train_loader
         self.test_loader = test_loader
-        self.opt = configs.vn_mri_opt_params["class"](self.model.parameters(), **configs.vn_mri_opt_params["args"])
-        self.scheduler = configs.vn_mri_opt_params["scheduler"](self.opt, **configs.vn_mri_opt_params["scheduler_args"])
+        # self.opt = configs.vn_mri_opt_params["class"](self.model.parameters(), **configs.vn_mri_opt_params["args"])
+        opt_args = self.params["opt_params"]
+        self.opt = opt_args["class"](self.model.parameters(), **configs.vn_mri_opt_params["args"])
+        # self.scheduler = configs.vn_mri_opt_params["scheduler"](self.opt, **configs.vn_mri_opt_params["scheduler_args"])
+        self.scheduler = opt_args["scheduler"](self.opt, **configs.vn_mri_opt_params["scheduler_args"])
         self.writer = SummaryWriter(self.params["log_dir"])
         self.global_steps = {"train": 0, "epoch": 0}
         self.loss = nn.L1Loss(reduction="sum")
