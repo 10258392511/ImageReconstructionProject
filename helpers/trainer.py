@@ -5,6 +5,7 @@ import torch.nn as nn
 import ImageReconstructionProject.scripts.configs as configs
 import ImageReconstructionProject.helpers.pytorch_utils as ptu
 
+from skimage.metrics import normalized_root_mse
 from torch.utils.tensorboard import SummaryWriter
 from torchvision.utils import make_grid
 from ImageReconstructionProject.models.vn_mri import VNMRI
@@ -41,6 +42,7 @@ class VNMRITrainer(object):
         pbar = tqdm(self.train_loader, total=len(self.train_loader), desc="training", leave=False)
 
         loss_avg = 0
+        rmse_avg = 0
         for i, (X_img, X_img_ks_mask, X_mask) in enumerate(pbar):
             # # TODO: comment out
             # if i == 2:
@@ -58,11 +60,14 @@ class VNMRITrainer(object):
 
             # logging
             loss_avg += loss.item() * X_img.shape[0]
+            rmse_iter= self.compute_nrmse_(X_img_recons, X_img)
+            rmse_avg += rmse_iter * X_img.shape[0]
             self.writer.add_scalar("train_loss", loss.item(), self.global_steps["train"])
+            self.writer.add_scalar("train_rmse", rmse_iter, self.global_steps["train"])
             self.global_steps["train"] += 1
-            pbar.set_description(f"train loss: {loss.item(): .3f}")
+            pbar.set_description(f"train loss: {loss.item(): .3f}, train nrmse: {rmse_iter: .3f}")
 
-        return loss_avg / len(self.train_loader.dataset)
+        return loss_avg / len(self.train_loader.dataset), rmse_avg / len(self.train_loader.dataset)
 
     @torch.no_grad()
     def eval_(self):
@@ -74,6 +79,7 @@ class VNMRITrainer(object):
         pbar = tqdm(self.test_loader, total=len(self.test_loader), desc="testing", leave=False)
 
         loss_avg = 0
+        rmse_avg = 0
         for i, (X_img, X_img_ks_mask, X_mask) in enumerate(pbar):
             # # TODO: comment out
             # if i == 2:
@@ -86,9 +92,11 @@ class VNMRITrainer(object):
 
             # logging
             loss_avg += loss.item() * X_img.shape[0]
-            pbar.set_description(f"eval loss: {loss.item(): .3f}")
+            rmse_iter = self.compute_nrmse_(X_img_recons, X_img)
+            rmse_avg += rmse_iter * X_img.shape[0]
+            pbar.set_description(f"eval loss: {loss.item(): .3f}, nrmse: {rmse_iter: .3f}")
 
-        return loss_avg / len(self.test_loader.dataset)
+        return loss_avg / len(self.test_loader.dataset), rmse_avg / len(self.test_loader.dataset)
 
     def train(self):
         if self.params["notebook"]:
@@ -99,8 +107,8 @@ class VNMRITrainer(object):
 
         best_eval_loss = float("inf")
         for epoch in pbar:
-            train_loss = self.train_()
-            eval_loss = self.eval_()
+            train_loss, train_rmse = self.train_()
+            eval_loss, eval_rmse = self.eval_()
             self.scheduler.step()
 
             # save the best model
@@ -111,11 +119,14 @@ class VNMRITrainer(object):
             # logging
             self.writer.add_scalar("epoch_train_loss", train_loss, self.global_steps["epoch"])
             self.writer.add_scalar("epoch_eval_loss", eval_loss, self.global_steps["epoch"])
+            self.writer.add_scalar("epoch_train_nrmse", train_rmse, self.global_steps["epoch"])
+            self.writer.add_scalar("epoch_eval_nrmse", eval_rmse, self.global_steps["epoch"])
             self.end_of_epoch_eval_()
             self.global_steps["epoch"] += 1
             for param in self.opt.param_groups:
                 break
-            pbar.set_description(f"loss: train: {train_loss: .3f}, eval: {eval_loss: .3f}, lr: {param['lr']}")
+            pbar.set_description(f"loss: train: {train_loss: .3f}, {train_rmse: .3f}, eval: {eval_loss: .3f}, "
+                                 f"{eval_rmse: .3f}, lr: {param['lr']}")
 
     @torch.no_grad()
     def end_of_epoch_eval_(self):
@@ -166,3 +177,14 @@ class VNMRITrainer(object):
     def save_model_(self):
         model_path = create_param_save_path(self.params["param_save_dir"], "model.pt")
         torch.save(self.model.state_dict(), model_path)
+
+    def compute_nrmse_(self, X_img_recons, X_img):
+        # X_img_recons, X_img: (B, 1, T, H, W) or (B, 1, H, W)
+        X_img_recons = np.abs(ptu.to_numpy(X_img_recons))
+        X_img = np.abs(ptu.to_numpy(X_img))
+        loss_avg = 0
+        for i in range(X_img.shape[0]):
+            loss_iter = normalized_root_mse(X_img_recons[0], X_img[0], normalization="min-max")
+            loss_avg += loss_iter
+
+        return loss_avg / X_img.shape[0]

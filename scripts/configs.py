@@ -6,7 +6,7 @@ dataset_args = {
     "split_ratio": 0.9,
     "seed": 0,
     "half_window_size": 5,  # same as hands-on 8
-    "sampling_ratio": 0.3,  # same as hands-on 8
+    "sampling_ratio": 0.2,  # hands-on 8: 0.3
     "noise_std": 0.01,
     "eps_log": 1e-6
 }
@@ -24,7 +24,6 @@ vn_mri_params = {
     "init_alpha_range": (0, 0.01),
     "init_momentum_range": (0.05, 0.2),
 }
-
 
 vn_mri_opt_params = {
     "class": AdamW,
