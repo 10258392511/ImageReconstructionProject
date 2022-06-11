@@ -1,7 +1,7 @@
 # Permutation-Invariant Variational Network MR Image Reconstruction
 
 ![](readme_figures/vtv.png)
-*The first figure is zero-padded reconstruction; the followings are sequential outputs or VN layers; and the last one 
+*The first figure is zero-padded reconstruction; the followings are sequential outputs of VN layers; and the last one 
 is the ground truth.*
 
 Please install the repo as editable library at the directory root:
